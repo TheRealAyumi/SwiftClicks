@@ -7,7 +7,7 @@ using namespace geode::prelude;
 
 class SwiftClickPopup : public Popup {
     protected:
-    CCLabelBMFont* m_valueLabel = nullptr;
+    geode::TextInput* m_valueInput = nullptr;
     CCMenuItemToggler* m_toggle = nullptr;
     int m_clicks = 2;
     bool m_enabled = false;
@@ -19,18 +19,13 @@ class SwiftClickPopup : public Popup {
         
         m_enabled = Mod::get()->getSavedValue<bool>("sc-enabled", false);
         m_clicks  = Mod::get()->getSavedValue<int>("sc-clicks", 2);
+        if (m_clicks < 2) m_clicks = 2;
         
         auto contentSize = m_mainLayer->getContentSize();
         float cx = contentSize.width / 2;
         float cy = contentSize.height / 2;
         
         // enabled row
-        auto enabledLbl = CCLabelBMFont::create("Enabled", "bigFont.fnt");
-        enabledLbl->setScale(0.55f);
-        enabledLbl->setAnchorPoint({1.f, 0.5f});
-        enabledLbl->setPosition({cx - 10.f, cy + 24.f});
-        m_mainLayer->addChild(enabledLbl);
-        
         m_toggle = CCMenuItemExt::createTogglerWithStandardSprites(
             0.7f,
             [this](CCMenuItemToggler* btn) {
@@ -38,11 +33,17 @@ class SwiftClickPopup : public Popup {
                 Mod::get()->setSavedValue("sc-enabled", m_enabled);
             }
         );
-        m_toggle->setPosition({cx + 18.f, cy + 24.f});
+        m_toggle->setPosition({cx - 40.f, cy + 30.f});
         if (m_enabled) {
             m_toggle->toggle(m_enabled);
         }
         m_buttonMenu->addChild(m_toggle);
+        
+        auto enabledLbl = CCLabelBMFont::create("Enabled", "bigFont.fnt");
+        enabledLbl->setScale(0.55f);
+        enabledLbl->setAnchorPoint({0.f, 0.5f});
+        enabledLbl->setPosition({cx - 19.f, cy + 30.f});
+        m_mainLayer->addChild(enabledLbl);
         
         // clicks per frame row
         auto clicksLbl = CCLabelBMFont::create("Clicks / Frame", "bigFont.fnt");
@@ -50,21 +51,29 @@ class SwiftClickPopup : public Popup {
         clicksLbl->setPosition({cx, cy - 14.f});
         m_mainLayer->addChild(clicksLbl);
         
-        // value box
-        auto box = NineSlice::create("square02_small.png");
-        if (!box) box = NineSlice::create("GJ_square07.png");
-        if (box) {
-            box->setContentSize({52.f, 28.f});
-            box->setOpacity(100);
-            box->setPosition({cx, cy - 44.f});
-            m_mainLayer->addChild(box);
+        // value input
+        m_valueInput = TextInput::create(52.f, "Num", "bigFont.fnt");
+        if (m_valueInput) {
+            m_valueInput->setPosition({cx, cy - 44.f});
+            m_valueInput->setCommonFilter(CommonFilter::Uint);
+            m_valueInput->setCallback([this](std::string const& str) {
+                if (str.empty()) {
+                    m_clicks = 2;
+                    Mod::get()->setSavedValue("sc-clicks", m_clicks);
+                    return;
+                }
+                int val = geode::utils::numFromString<int>(str).unwrapOr(2);
+                
+                if (val < 2) {
+                    val = 2;
+                    m_valueInput->setString("2", false);
+                }
+                m_clicks = val;
+                Mod::get()->setSavedValue("sc-clicks", m_clicks);
+            });
+            m_mainLayer->addChild(m_valueInput);
         }
         
-        // value label
-        m_valueLabel = CCLabelBMFont::create("2", "bigFont.fnt");
-        m_valueLabel->setScale(0.6f);
-        m_valueLabel->setPosition({cx, cy - 44.f});
-        m_mainLayer->addChild(m_valueLabel);
         updateValueLabel();
         
         // left arrow (decrease)
@@ -88,11 +97,9 @@ class SwiftClickPopup : public Popup {
         auto rightBtn = CCMenuItemExt::createSpriteExtra(
             rightSpr,
             [this](CCMenuItemSpriteExtra* btn) {
-                if (m_clicks < 20) {
-                    m_clicks++;
-                    Mod::get()->setSavedValue("sc-clicks", m_clicks);
-                    updateValueLabel();
-                }
+                m_clicks++;
+                Mod::get()->setSavedValue("sc-clicks", m_clicks);
+                updateValueLabel();
             }
         );
         rightBtn->setPosition({cx + 50.f, cy - 44.f});
@@ -102,7 +109,7 @@ class SwiftClickPopup : public Popup {
     }
     
     void updateValueLabel() {
-        m_valueLabel->setString(geode::utils::numToString(m_clicks).c_str());
+        m_valueInput->setString(geode::utils::numToString(m_clicks));
     }
     
     public:
@@ -131,7 +138,7 @@ class $modify(MyMenuLayer, MenuLayer) {
             CircleBaseSize::MediumAlt
         );
         mySprite->setTopOffset(ccp(0, 2));
-                
+        
         auto myButton = CCMenuItemExt::createSpriteExtra(
             mySprite,
             [this](CCMenuItemSpriteExtra* btn) {
