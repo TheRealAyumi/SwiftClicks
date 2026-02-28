@@ -8,3 +8,5 @@ Credits:
 Mod by Ayumi (TheRealAyumi)
 
 Icon by GroupNil (NilGMD)
+
+Some Modifications Were Made by slideglide
