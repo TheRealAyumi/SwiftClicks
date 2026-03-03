@@ -225,8 +225,8 @@ class $modify(MyEndLevelLayer, EndLevelLayer) {
 
         if (!g_usedThisLevel) return;
 
-        auto label = CCLabelBMFont::create("Swift Clicks Mod Was Used", "bigFont.fnt");
-        label->setScale(0.3f);
+        auto label = CCLabelBMFont::create("Swift Click Was Used", "bigFont.fnt");
+        label->setScale(0.4f);
         label->setColor({255, 100, 100});
         label->setOpacity(200);
 
@@ -255,8 +255,8 @@ class $modify(MyBaseGameLayer, GJBaseGameLayer) {
         // requires pushButton/releaseButton to simulate a fresh touch event.
         // Plain handleButton(false/true) doesn't register as a new touch so orbs ignore it.
         for (int i = 1; i < g_clicks; i++) {
-            PlayerObject::releaseButton(button, isPrimary);
-            PlayerObject::pushButton(button, isPrimary);
+            if (auto pl = typeinfo_cast<PlayLayer*>(this)) pl->releaseButton(button, isPrimary);
+            if (auto pl = typeinfo_cast<PlayLayer*>(this)) pl->pushButton(button, isPrimary);
         }
 #else
         // On PC, handleButton is sufficient — key state changes are tracked directly.
