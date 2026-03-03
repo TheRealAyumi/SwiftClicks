@@ -1,3 +1,5 @@
+# 1.0.4
+- Fixed 1.0.3 Loading Mod Error :P
 # 1.0.3
 - Modified it so you can Record Macros (Silicate, Doesn't Work With Mega Hack) with this Enabled, then you can Replay the Macro with the Mod Disabled. Added a Mod Indicator at the End of a Level.
 # 1.0.2
