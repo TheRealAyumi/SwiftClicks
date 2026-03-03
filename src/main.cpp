@@ -9,9 +9,9 @@ using namespace geode::prelude;
 
 // ─── Cached state ─────────────────────────────────────────────────────────────
 
-static bool g_enabled    = false;
-static int  g_clicks     = 2;
-static bool g_processing = false;
+static bool g_enabled       = false;
+static int  g_clicks        = 2;
+static bool g_processing    = false;
 static bool g_usedThisLevel = false;
 
 static void syncCache() {
@@ -27,10 +27,10 @@ $execute {
 
 class SwiftClickPopup : public Popup {
 protected:
-    geode::TextInput*    m_valueInput = nullptr;
-    CCMenuItemToggler*   m_toggle     = nullptr;
-    int                  m_clicks     = 2;
-    bool                 m_enabled    = false;
+    geode::TextInput*  m_valueInput = nullptr;
+    CCMenuItemToggler* m_toggle     = nullptr;
+    int                m_clicks     = 2;
+    bool               m_enabled    = false;
 
     bool init() {
         if (!Popup::init(260.f, 190.f)) return false;
@@ -239,6 +239,7 @@ class $modify(MyEndLevelLayer, EndLevelLayer) {
     }
 };
 
+// ─── GJBaseGameLayer Hook ─────────────────────────────────────────────────────
 
 class $modify(MyBaseGameLayer, GJBaseGameLayer) {
     void handleButton(bool push, int button, bool isPrimary) {
@@ -246,12 +247,25 @@ class $modify(MyBaseGameLayer, GJBaseGameLayer) {
 
         if (!push || !g_enabled || g_processing) return;
 
-        g_processing = true;
+        g_processing    = true;
         g_usedThisLevel = true;
+
+#ifdef GEODE_IS_MOBILE
+        // On mobile, touch input for orbs (especially multi-activate dash orbs)
+        // requires pushButton/releaseButton to simulate a fresh touch event.
+        // Plain handleButton(false/true) doesn't register as a new touch so orbs ignore it.
+        for (int i = 1; i < g_clicks; i++) {
+            this->releaseButton(button, isPrimary);
+            this->pushButton(button, isPrimary);
+        }
+#else
+        // On PC, handleButton is sufficient — key state changes are tracked directly.
         for (int i = 1; i < g_clicks; i++) {
             GJBaseGameLayer::handleButton(false, button, isPrimary);
             GJBaseGameLayer::handleButton(true, button, isPrimary);
         }
+#endif
+
         g_processing = false;
     }
 };
