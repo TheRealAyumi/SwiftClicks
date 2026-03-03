@@ -255,8 +255,8 @@ class $modify(MyBaseGameLayer, GJBaseGameLayer) {
         // requires pushButton/releaseButton to simulate a fresh touch event.
         // Plain handleButton(false/true) doesn't register as a new touch so orbs ignore it.
         for (int i = 1; i < g_clicks; i++) {
-            this->releaseButton(button, isPrimary);
-            this->pushButton(button, isPrimary);
+            GJBaseGameLayer::releaseButton(button, isPrimary);
+            GJBaseGameLayer::pushButton(button, isPrimary);
         }
 #else
         // On PC, handleButton is sufficient — key state changes are tracked directly.
