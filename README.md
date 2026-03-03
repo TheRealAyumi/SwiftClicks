@@ -6,4 +6,9 @@ Now it is super easy to click twice (or more!) in one frame. For example, a mult
 
 Enable this mod and play level ID: 134553188
 
-Credits: Mod by Ayumi (TheRealAyumi)
+Credits:
+Mod by Ayumi (TheRealAyumi)
+
+Logo by GroupNil (NilGMD)
+
+Some Changes by slideglide
