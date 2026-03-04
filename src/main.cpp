@@ -7,11 +7,9 @@
 
 using namespace geode::prelude;
 
-// ─── Cached state ─────────────────────────────────────────────────────────────
-
-static bool g_enabled       = false;
-static int  g_clicks        = 2;
-static bool g_processing    = false;
+static bool g_enabled    = false;
+static int  g_clicks     = 2;
+static bool g_processing = false;
 static bool g_usedThisLevel = false;
 
 static void syncCache() {
@@ -23,14 +21,12 @@ $execute {
     syncCache();
 }
 
-// ─── Swift Click Popup ────────────────────────────────────────────────────────
-
 class SwiftClickPopup : public Popup {
 protected:
-    geode::TextInput*  m_valueInput = nullptr;
-    CCMenuItemToggler* m_toggle     = nullptr;
-    int                m_clicks     = 2;
-    bool               m_enabled    = false;
+    geode::TextInput*    m_valueInput = nullptr;
+    CCMenuItemToggler*   m_toggle     = nullptr;
+    int                  m_clicks     = 2;
+    bool                 m_enabled    = false;
 
     bool init() {
         if (!Popup::init(260.f, 190.f)) return false;
@@ -43,8 +39,6 @@ protected:
         auto contentSize = m_mainLayer->getContentSize();
         float cx = contentSize.width  / 2;
         float cy = contentSize.height / 2;
-
-        // ── Enabled toggle ──────────────────────────────────────────────────
 
         m_toggle = CCMenuItemExt::createTogglerWithStandardSprites(
             0.7f,
@@ -64,14 +58,10 @@ protected:
         enabledLbl->setPosition({cx - 19.f, cy + 30.f});
         m_mainLayer->addChild(enabledLbl);
 
-        // ── Clicks / Frame label ────────────────────────────────────────────
-
         auto clicksLbl = CCLabelBMFont::create("Clicks / Frame", "bigFont.fnt");
         clicksLbl->setScale(0.48f);
         clicksLbl->setPosition({cx, cy - 14.f});
         m_mainLayer->addChild(clicksLbl);
-
-        // ── Value input ─────────────────────────────────────────────────────
 
         m_valueInput = TextInput::create(52.f, "Num", "bigFont.fnt");
         if (m_valueInput) {
@@ -96,8 +86,6 @@ protected:
 
         updateValueLabel();
 
-        // ── Left arrow (decrease) ───────────────────────────────────────────
-
         auto leftSpr = CCSprite::createWithSpriteFrameName("GJ_arrow_01_001.png");
         auto leftBtn = CCMenuItemExt::createSpriteExtra(
             leftSpr,
@@ -112,8 +100,6 @@ protected:
         );
         leftBtn->setPosition({cx - 50.f, cy - 44.f});
         m_buttonMenu->addChild(leftBtn);
-
-        // ── Right arrow (increase) ──────────────────────────────────────────
 
         auto rightSpr = CCSprite::createWithSpriteFrameName("GJ_arrow_01_001.png");
         rightSpr->setFlipX(true);
@@ -149,13 +135,9 @@ public:
     }
 };
 
-// ─── Open popup helper ────────────────────────────────────────────────────────
-
 static void openPopup() {
     SwiftClickPopup::create()->show();
 }
-
-// ─── MenuLayer Hook ───────────────────────────────────────────────────────────
 
 class $modify(MyMenuLayer, MenuLayer) {
     bool init() {
@@ -182,8 +164,6 @@ class $modify(MyMenuLayer, MenuLayer) {
     }
 };
 
-// ─── PauseLayer Hook ──────────────────────────────────────────────────────────
-
 class $modify(MyPauseLayer, PauseLayer) {
     void customSetup() {
         PauseLayer::customSetup();
@@ -208,8 +188,6 @@ class $modify(MyPauseLayer, PauseLayer) {
     }
 };
 
-// ─── PlayLayer Hook — reset flag on each attempt ─────────────────────────────
-
 class $modify(MyPlayLayer, PlayLayer) {
     void resetLevel() {
         PlayLayer::resetLevel();
@@ -217,16 +195,14 @@ class $modify(MyPlayLayer, PlayLayer) {
     }
 };
 
-// ─── EndLevelLayer Hook — show indicator if swift click was used ──────────────
-
 class $modify(MyEndLevelLayer, EndLevelLayer) {
     void customSetup() {
         EndLevelLayer::customSetup();
 
         if (!g_usedThisLevel) return;
 
-        auto label = CCLabelBMFont::create("Swift Click Was Used", "bigFont.fnt");
-        label->setScale(0.4f);
+        auto label = CCLabelBMFont::create("Swift Clicks Mod Was Used", "bigFont.fnt");
+        label->setScale(0.3f);
         label->setColor({255, 100, 100});
         label->setOpacity(200);
 
@@ -239,33 +215,34 @@ class $modify(MyEndLevelLayer, EndLevelLayer) {
     }
 };
 
-// ─── GJBaseGameLayer Hook ─────────────────────────────────────────────────────
 
 class $modify(MyBaseGameLayer, GJBaseGameLayer) {
     void handleButton(bool push, int button, bool isPrimary) {
         GJBaseGameLayer::handleButton(push, button, isPrimary);
-
+        
         if (!push || !g_enabled || g_processing) return;
-
+        
         g_processing    = true;
         g_usedThisLevel = true;
-
-#ifdef GEODE_IS_MOBILE
-        // On mobile, touch input for orbs (especially multi-activate dash orbs)
-        // requires pushButton/releaseButton to simulate a fresh touch event.
-        // Plain handleButton(false/true) doesn't register as a new touch so orbs ignore it.
-        for (int i = 1; i < g_clicks; i++) {
-            if (auto pl = typeinfo_cast<PlayLayer*>(this)) pl->releaseButton(button, isPrimary);
-            if (auto pl = typeinfo_cast<PlayLayer*>(this)) pl->pushButton(button, isPrimary);
+        
+        #ifdef GEODE_IS_MOBILE
+        auto player = isPrimary ? m_player1 : m_player2;
+        
+        if (player) {
+            auto btn = static_cast<PlayerButton>(button);
+            
+            for (int i = 1; i < g_clicks; i++) {
+                player->releaseButton(btn);
+                player->pushButton(btn);
+            }
         }
-#else
-        // On PC, handleButton is sufficient — key state changes are tracked directly.
+        #else
+        
         for (int i = 1; i < g_clicks; i++) {
             GJBaseGameLayer::handleButton(false, button, isPrimary);
             GJBaseGameLayer::handleButton(true, button, isPrimary);
         }
-#endif
-
+        #endif
         g_processing = false;
     }
 };
