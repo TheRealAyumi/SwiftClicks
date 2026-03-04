@@ -1,3 +1,5 @@
+# 1.0.5
+- MOBILE DEVICE SUPPORT IS HERE! Special Thanks to slideglide for Helping Me Achieve This!! Added Advanced Settings!! (Automatically Changes Clicks/Frame at a Certain Percentage, By Ayumi)
 # 1.0.4
 - Fixed 1.0.3 Loading Mod Error :P
 # 1.0.3
