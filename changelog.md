@@ -1,3 +1,5 @@
+# 1.0.6
+- Added Smart Swift. Checks How Many Multi Activate Orbs (Of Choice) and Checks How Many Clicks/Frame Should Happen. Lowered Clicks/Frame Minumum to 1 So It Works With Advanced Settings (If You Want Normal Clicks/Frame at First Then Want 2 or More Clicks/Frame at a Later Percentage)
 # 1.0.5
 - MOBILE DEVICE SUPPORT IS HERE! Special Thanks to slideglide for Helping Me Achieve This!! Added Advanced Settings!! (Automatically Changes Clicks/Frame at a Certain Percentage, By Ayumi)
 # 1.0.4
